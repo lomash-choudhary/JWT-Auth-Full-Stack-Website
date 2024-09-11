@@ -1,81 +1,107 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Auth full stack app</title>
+    <title>Auth App</title>
     <script src = "https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
-    <script>
-      async function getUserInfo(){
-        document.getElementById("signup-div").innerHTML = '';
-        document.getElementById("signin-div").innerHTML = '';
-        const token = localStorage.getItem("token");
+  </head>
+  <body>
+    <div id = "signUpDiv">
+      SignUp
+      <input id = "usernameId" type = "text" placeholder = "Enter username">
+      <input id = "passwordId" type = "text" placeholder = "Enter password">
+      <button onclick = "signup()">
+        Submit
+      </button>
+    </div>
 
+    <div id = "signInDiv">
+      SignIn
+      <input id = "signInUsernameId" type = "text" placeholder = "Enter username">
+      <input id = "signInPasswordId" type = "text" placeholder = "Enter password">
+      <button onclick = "signin()">
+        Submit
+      </button>
+    </div>
+
+    <h4 id = "userInfoHeading">
+      User Info:
+    </h4>
+
+    <div id = "userInfoDiv">
+    </div>
+
+    <div id = "logoutButtonDiv">
+      <button onclick = "logout()">
+        Logout
+      </button>
+    </div>
+
+    <div id = "time-left-div"></div>
+
+    <script>
+      async function signup(){
+        const username = document.getElementById("usernameId").value;
+        const password = document.getElementById("passwordId").value;
+
+        const response = await axios.post("http://localhost:3000/signup",{
+          username: username,
+          password: password
+        })
+
+        alert("user signed up successfully");
+
+      }
+
+      async function getUserInfo(){
+        document.getElementById("signUpDiv").innerHTML = "";
+        document.getElementById("signInDiv").innerHTML = "";
+        const token = localStorage.getItem("token");
         if(token){
-          const response = await axios.get("http://localhost:3000/me",{
+          const response = await axios.get("http://localhost:3000/me", {
             headers: {
               token: token
             }
           })
-          document.getElementById("user-info").innerHTML = `Username: ${response.data.username} <br> Password: ${response.data.password}`;
+          document.getElementById("userInfoDiv").innerHTML = `Username: ${response.data.username} <br> Password: ${response.data.password}`
         }
-      }
-      async function signup(){
-        const username = document.getElementById("username-id").value;
-        const password = document.getElementById("password-id").value;
-        await axios.post("http://localhost:3000/signup", {
-          username,
-          password
-        })
-        alert("user signed in");
       }
 
       async function signin(){
-        const username = document.getElementById("signinUsername").value;
-        const password = document.getElementById("signinPassword").value;
+        const username = document.getElementById("signInUsernameId").value;
+        const password = document.getElementById("signInPasswordId").value;
 
-        const response = await axios.post("http://localhost:3000/signin",{
-          username,
-          password
-        });
-
+        const response = await axios.post("http://localhost:3000/signin", {
+          username: username,
+          password: password
+        })
         localStorage.setItem("token", response.data.token);
-        alert("signed in successfully");
-        
         getUserInfo();
       }
-      
-      async function userLogout(){
-        document.querySelector("body").innerHTML = ''
+
+      async function logout(){
+        document.getElementById("signUpDiv").innerHTML = "";
+        document.getElementById("signInDiv").innerHTML = "";
+        document.getElementById("userInfoDiv").innerHTML = "";
+        document.getElementById("logoutButtonDiv").innerHTML = "";
+        document.getElementById("userInfoHeading").innerHTML = "";
         const newHeading = document.createElement("h2");
-        newHeading.innerHTML = "User Logged Out";
+        newHeading.innerHTML = "User Logged out";
         document.querySelector("body").appendChild(newHeading);
         localStorage.removeItem("token");
+        const timerHeading = document.createElement("h4");
+        let timeleft = 5;
+        timerHeading.innerHTML = `page will reload in ${timeleft} seconds`;
+        document.getElementById("time-left-div").appendChild(timerHeading);
+        const countDownInterval = setInterval(() => {
+          timeleft--;
+          timerHeading.innerHTML = `page will reload in ${timeleft} seconds`;
+
+          if(timeleft <= 0){
+            clearInterval(countDownInterval);
+            location.reload()
+          }
+        },1000)
       }
-
     </script>
-  </head>
-  <body>
-
-    <div id = "signup-div">
-      Signup
-      <input id = "username-id" type = "text" name = "username" placeholder = "Username">
-      <input id = "password-id" type = "text" name = "password" placeholder = "Password">
-      <button onclick = "signup()">Submit</button>
-    </div>
-
-    <div id = "signin-div">
-      Signin
-      <input id = "signinUsername" type = "text" name = "username" placeholder = "Username">
-      <input id = "signinPassword" type = "text" name = "password" placeholder = "Password">
-      <button onclick = "signin()">Submit</button>
-    </div>
-    
-    <div>
-      <h2>User Information</h2>
-      <div id = "user-info"></div>
-    </div>
-
-    <button onclick = "userLogout()">
-      Logout
-    </button>
   </body>
 </html>

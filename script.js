@@ -1,30 +1,31 @@
-const express = require("express")
+const express = require("express");
 const app = express();
 const port = 3000;
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "iLoveCoding"
+const JWT_SECRET = "ILoveCoding"
 const cors = require("cors");
 
-app.use(express.json());
 app.use(cors());
 
-let users = [];
+app.use(express.json());
+
+
+const users = [];
 
 app.post("/signup", function (req, res) {
   const username = req.body.username;
   const password = req.body.password;
-
+  
   users.push({
-   username,
-   password
+    username,
+    password
   })
-
   res.json({
-    message: "You signed up on the app"
+    message: "user signed up successfully"
   })
 })
 
-app.post("/signin", function (req, res) {
+app.post("/signin", function(req, res) {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -32,37 +33,38 @@ app.post("/signin", function (req, res) {
 
   if(user){
     const token = jwt.sign({
-      username: username
+      username: user.username
     },JWT_SECRET)
     res.json({
       token: token
     })
   }
   else{
-    res.status(404).json({
-      message: "you credentials are inncorrect"
+    res.json({
+      message: "Credentials are inncorrect"
     })
   }
 })
 
 function auth(req, res, next){
   const token = req.headers.token;
-  const user = jwt.verify(token, JWT_SECRET);
-  if(user){
-    req.user = user;
-    next()
+  const decodedUser = jwt.verify(token, JWT_SECRET);
+
+  if(decodedUser){
+    req.user = decodedUser;
+    next();
   }
   else{
     res.json({
-      message: "Unauthorized"
+      message: "Authentication failed"
     })
   }
-}
+} 
 
-app.get("/me", auth, function (req, res) {
+app.get("/me",auth, function (req, res) {
   const user = req.user;
 
-  const foundUser = users.find(u => u.username === user.username)
+  const foundUser = users.find(u => user.username === u.username)
   if(foundUser){
     res.json({
       username: foundUser.username,
@@ -74,8 +76,8 @@ app.get("/me", auth, function (req, res) {
       message: "user does not exists"
     })
   }
-})
+})  
 
 app.listen(port, () => {
-  console.log("app is listening on port:",port)
+  console.log("app is listening on port:", port);
 })
